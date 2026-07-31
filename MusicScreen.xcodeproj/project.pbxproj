@@ -1,0 +1,131 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000000000000000000001 /* MusicScreenApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000001 /* MusicScreenApp.swift */; };
+		A00000000000000000000002 /* NowPlayingTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* NowPlayingTrack.swift */; };
+		A00000000000000000000003 /* MusicProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000003 /* MusicProvider.swift */; };
+		A00000000000000000000004 /* MockMusicProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000004 /* MockMusicProvider.swift */; };
+		A00000000000000000000005 /* NowPlayingMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000005 /* NowPlayingMonitor.swift */; };
+		A00000000000000000000006 /* SharedSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000006 /* SharedSettings.swift */; };
+		A00000000000000000000007 /* ArtworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000007 /* ArtworkView.swift */; };
+		A00000000000000000000008 /* BlurredArtworkBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000008 /* BlurredArtworkBackground.swift */; };
+		A00000000000000000000009 /* ClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000009 /* ClockView.swift */; };
+		A0000000000000000000000A /* NowPlayingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000A /* NowPlayingScreen.swift */; };
+		A0000000000000000000000B /* PreviewContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000B /* PreviewContainerView.swift */; };
+		A0000000000000000000000C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000C /* SettingsView.swift */; };
+		A0000000000000000000000D /* SampleArtwork.svg in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000D /* SampleArtwork.svg */; };
+		A0000000000000000000000E /* MusicScreenSaverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000F /* MusicScreenSaverView.swift */; };
+		A0000000000000000000000F /* ScreenSaver.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B00000000000000000000011 /* ScreenSaver.framework */; };
+		A00000000000000000000010 /* ScreenSaverHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* ScreenSaverHostView.swift */; };
+		A00000000000000000000011 /* NowPlayingTrack.swift in Saver Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000002 /* NowPlayingTrack.swift */; };
+		A00000000000000000000015 /* SharedSettings.swift in Saver Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000006 /* SharedSettings.swift */; };
+		A00000000000000000000016 /* ArtworkView.swift in Saver Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000007 /* ArtworkView.swift */; };
+		A00000000000000000000017 /* BlurredArtworkBackground.swift in Saver Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000008 /* BlurredArtworkBackground.swift */; };
+		A00000000000000000000018 /* ClockView.swift in Saver Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000009 /* ClockView.swift */; };
+		A00000000000000000000019 /* NowPlayingScreen.swift in Saver Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000A /* NowPlayingScreen.swift */; };
+		A0000000000000000000001A /* SampleArtwork.svg in Saver Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000D /* SampleArtwork.svg */; };
+		A0000000000000000000001B /* AppleMusicClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000013 /* AppleMusicClient.swift */; };
+		A0000000000000000000001C /* AppleMusicProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000014 /* AppleMusicProvider.swift */; };
+		A0000000000000000000001F /* NowPlayingCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000016 /* NowPlayingCache.swift */; };
+		A00000000000000000000020 /* NowPlayingCache.swift in Saver Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000016 /* NowPlayingCache.swift */; };
+		A00000000000000000000021 /* NowPlayingCacheWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000017 /* NowPlayingCacheWriter.swift */; };
+		A00000000000000000000022 /* CompanionStatusModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000018 /* CompanionStatusModel.swift */; };
+		A00000000000000000000023 /* CompanionStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000019 /* CompanionStatusView.swift */; };
+		A00000000000000000000024 /* SharedCacheMonitor.swift in Saver Sources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000001A /* SharedCacheMonitor.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B00000000000000000000001 /* MusicScreenApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicScreenApp.swift; sourceTree = "<group>"; };
+		B00000000000000000000002 /* NowPlayingTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingTrack.swift; sourceTree = "<group>"; };
+		B00000000000000000000003 /* MusicProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicProvider.swift; sourceTree = "<group>"; };
+		B00000000000000000000004 /* MockMusicProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockMusicProvider.swift; sourceTree = "<group>"; };
+		B00000000000000000000005 /* NowPlayingMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMonitor.swift; sourceTree = "<group>"; };
+		B00000000000000000000006 /* SharedSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedSettings.swift; sourceTree = "<group>"; };
+		B00000000000000000000007 /* ArtworkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkView.swift; sourceTree = "<group>"; };
+		B00000000000000000000008 /* BlurredArtworkBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurredArtworkBackground.swift; sourceTree = "<group>"; };
+		B00000000000000000000009 /* ClockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockView.swift; sourceTree = "<group>"; };
+		B0000000000000000000000A /* NowPlayingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingScreen.swift; sourceTree = "<group>"; };
+		B0000000000000000000000B /* PreviewContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewContainerView.swift; sourceTree = "<group>"; };
+		B0000000000000000000000C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B0000000000000000000000D /* SampleArtwork.svg */ = {isa = PBXFileReference; lastKnownFileType = image.svg; path = SampleArtwork.svg; sourceTree = "<group>"; };
+		B0000000000000000000000E /* MusicScreen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MusicScreen.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0000000000000000000000F /* MusicScreenSaverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicScreenSaverView.swift; sourceTree = "<group>"; };
+		B00000000000000000000010 /* MusicScreenSaver.saver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MusicScreenSaver.saver; sourceTree = BUILT_PRODUCTS_DIR; };
+		B00000000000000000000011 /* ScreenSaver.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScreenSaver.framework; path = System/Library/Frameworks/ScreenSaver.framework; sourceTree = SDKROOT; };
+		B00000000000000000000012 /* ScreenSaverHostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenSaverHostView.swift; sourceTree = "<group>"; };
+		B00000000000000000000013 /* AppleMusicClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicClient.swift; sourceTree = "<group>"; };
+		B00000000000000000000014 /* AppleMusicProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleMusicProvider.swift; sourceTree = "<group>"; };
+		B00000000000000000000015 /* MusicScreen.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MusicScreen.entitlements; sourceTree = "<group>"; };
+		B00000000000000000000016 /* NowPlayingCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingCache.swift; sourceTree = "<group>"; };
+		B00000000000000000000017 /* NowPlayingCacheWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingCacheWriter.swift; sourceTree = "<group>"; };
+		B00000000000000000000018 /* CompanionStatusModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionStatusModel.swift; sourceTree = "<group>"; };
+		B00000000000000000000019 /* CompanionStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionStatusView.swift; sourceTree = "<group>"; };
+		B0000000000000000000001A /* SharedCacheMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCacheMonitor.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C00000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		C00000000000000000000004 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000000F /* ScreenSaver.framework in Frameworks */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D00000000000000000000001 = {isa = PBXGroup; children = (D00000000000000000000002 /* MusicScreenApp */, D0000000000000000000000E /* MusicScreenSaver */, D00000000000000000000004 /* Shared */, D0000000000000000000000F /* Frameworks */, D00000000000000000000009 /* Products */); sourceTree = "<group>"; };
+		D00000000000000000000002 /* MusicScreenApp */ = {isa = PBXGroup; path = MusicScreenApp; sourceTree = "<group>"; children = (B00000000000000000000015 /* MusicScreen.entitlements */, D00000000000000000000003 /* App */, D00000000000000000000010 /* Services */, D0000000000000000000000A /* Preview */, D0000000000000000000000B /* Settings */, D0000000000000000000000C /* Resources */); };
+		D00000000000000000000003 /* App */ = {isa = PBXGroup; path = App; sourceTree = "<group>"; children = (B00000000000000000000001 /* MusicScreenApp.swift */); };
+		D00000000000000000000004 /* Shared */ = {isa = PBXGroup; path = Shared; sourceTree = "<group>"; children = (D00000000000000000000011 /* Cache */, D00000000000000000000005 /* Models */, D00000000000000000000006 /* Providers */, D00000000000000000000007 /* Services */, D00000000000000000000008 /* Settings */, D0000000000000000000000D /* Views */); };
+		D00000000000000000000005 /* Models */ = {isa = PBXGroup; path = Models; sourceTree = "<group>"; children = (B00000000000000000000002 /* NowPlayingTrack.swift */); };
+		D00000000000000000000006 /* Providers */ = {isa = PBXGroup; path = Providers; sourceTree = "<group>"; children = (B00000000000000000000003 /* MusicProvider.swift */, B00000000000000000000004 /* MockMusicProvider.swift */, B00000000000000000000013 /* AppleMusicClient.swift */, B00000000000000000000014 /* AppleMusicProvider.swift */); };
+		D00000000000000000000007 /* Services */ = {isa = PBXGroup; path = Services; sourceTree = "<group>"; children = (B00000000000000000000005 /* NowPlayingMonitor.swift */); };
+		D00000000000000000000008 /* Settings */ = {isa = PBXGroup; path = Settings; sourceTree = "<group>"; children = (B00000000000000000000006 /* SharedSettings.swift */); };
+		D00000000000000000000009 /* Products */ = {isa = PBXGroup; children = (B0000000000000000000000E /* MusicScreen.app */, B00000000000000000000010 /* MusicScreenSaver.saver */); name = Products; sourceTree = "<group>"; };
+		D0000000000000000000000A /* Preview */ = {isa = PBXGroup; path = Preview; sourceTree = "<group>"; children = (B0000000000000000000000B /* PreviewContainerView.swift */, B00000000000000000000019 /* CompanionStatusView.swift */); };
+		D0000000000000000000000B /* Settings */ = {isa = PBXGroup; path = Settings; sourceTree = "<group>"; children = (B0000000000000000000000C /* SettingsView.swift */); };
+		D0000000000000000000000C /* Resources */ = {isa = PBXGroup; path = Resources; sourceTree = "<group>"; children = (B0000000000000000000000D /* SampleArtwork.svg */); };
+		D0000000000000000000000D /* Views */ = {isa = PBXGroup; path = Views; sourceTree = "<group>"; children = (B00000000000000000000007 /* ArtworkView.swift */, B00000000000000000000008 /* BlurredArtworkBackground.swift */, B00000000000000000000009 /* ClockView.swift */, B0000000000000000000000A /* NowPlayingScreen.swift */); };
+		D0000000000000000000000E /* MusicScreenSaver */ = {isa = PBXGroup; path = MusicScreenSaver; sourceTree = "<group>"; children = (B0000000000000000000000F /* MusicScreenSaverView.swift */, B00000000000000000000012 /* ScreenSaverHostView.swift */, B0000000000000000000001A /* SharedCacheMonitor.swift */); };
+		D0000000000000000000000F /* Frameworks */ = {isa = PBXGroup; name = Frameworks; sourceTree = "<group>"; children = (B00000000000000000000011 /* ScreenSaver.framework */); };
+		D00000000000000000000010 /* Services */ = {isa = PBXGroup; path = Services; sourceTree = "<group>"; children = (B00000000000000000000017 /* NowPlayingCacheWriter.swift */, B00000000000000000000018 /* CompanionStatusModel.swift */); };
+		D00000000000000000000011 /* Cache */ = {isa = PBXGroup; path = Cache; sourceTree = "<group>"; children = (B00000000000000000000016 /* NowPlayingCache.swift */); };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E00000000000000000000001 /* MusicScreen */ = {isa = PBXNativeTarget; buildConfigurationList = F00000000000000000000002 /* Build configuration list for PBXNativeTarget */; buildPhases = (C00000000000000000000002 /* Sources */, C00000000000000000000001 /* Frameworks */, C00000000000000000000003 /* Resources */); buildRules = (); dependencies = (); name = MusicScreen; productName = MusicScreen; productReference = B0000000000000000000000E /* MusicScreen.app */; productType = "com.apple.product-type.application"; };
+		E00000000000000000000003 /* MusicScreenSaver */ = {isa = PBXNativeTarget; buildConfigurationList = F00000000000000000000003 /* Build configuration list for MusicScreenSaver */; buildPhases = (C00000000000000000000005 /* Sources */, C00000000000000000000004 /* Frameworks */, C00000000000000000000006 /* Resources */); buildRules = (); dependencies = (); name = MusicScreenSaver; productName = MusicScreenSaver; productReference = B00000000000000000000010 /* MusicScreenSaver.saver */; productType = "com.apple.product-type.bundle"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E00000000000000000000002 /* Project object */ = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 2660; LastUpgradeCheck = 2660; TargetAttributes = {E00000000000000000000001 = {CreatedOnToolsVersion = 26.6; }; E00000000000000000000003 = {CreatedOnToolsVersion = 26.6; }; }; }; buildConfigurationList = F00000000000000000000001 /* Build configuration list for PBXProject */; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = D00000000000000000000001; productRefGroup = D00000000000000000000009 /* Products */; projectDirPath = ""; projectRoot = ""; targets = (E00000000000000000000001 /* MusicScreen */, E00000000000000000000003 /* MusicScreenSaver */); };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C00000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000000D /* SampleArtwork.svg in Resources */); runOnlyForDeploymentPostprocessing = 0; };
+		C00000000000000000000006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000001A /* SampleArtwork.svg in Saver Resources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C00000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000001, A00000000000000000000002, A00000000000000000000003, A00000000000000000000004, A00000000000000000000005, A00000000000000000000006, A00000000000000000000007, A00000000000000000000008, A00000000000000000000009, A0000000000000000000000A, A0000000000000000000000B, A0000000000000000000000C, A0000000000000000000001B /* AppleMusicClient.swift in Sources */, A0000000000000000000001C /* AppleMusicProvider.swift in Sources */, A0000000000000000000001F /* NowPlayingCache.swift in Sources */, A00000000000000000000021 /* NowPlayingCacheWriter.swift in Sources */, A00000000000000000000022 /* CompanionStatusModel.swift in Sources */, A00000000000000000000023 /* CompanionStatusView.swift in Sources */); runOnlyForDeploymentPostprocessing = 0; };
+		C00000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A0000000000000000000000E /* MusicScreenSaverView.swift in Sources */, A00000000000000000000010 /* ScreenSaverHostView.swift in Sources */, A00000000000000000000011 /* NowPlayingTrack.swift in Saver Sources */, A00000000000000000000015 /* SharedSettings.swift in Saver Sources */, A00000000000000000000016 /* ArtworkView.swift in Saver Sources */, A00000000000000000000017 /* BlurredArtworkBackground.swift in Saver Sources */, A00000000000000000000018 /* ClockView.swift in Saver Sources */, A00000000000000000000019 /* NowPlayingScreen.swift in Saver Sources */, A00000000000000000000020 /* NowPlayingCache.swift in Saver Sources */, A00000000000000000000024 /* SharedCacheMonitor.swift in Saver Sources */); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		110000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_STRICT_CONCURRENCY = complete;}; name = Debug; };
+		110000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; CLANG_ENABLE_OBJC_ARC = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_STRICT_CONCURRENCY = complete;}; name = Release; };
+		110000000000000000000003 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_ENTITLEMENTS = MusicScreenApp/MusicScreen.entitlements; CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = MusicScreen; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment"; INFOPLIST_KEY_NSAppleEventsUsageDescription = "MusicScreen reads the current track from Apple Music to display it on screen."; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.example.MusicScreen; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 6.0; }; name = Debug; };
+		110000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_ENTITLEMENTS = MusicScreenApp/MusicScreen.entitlements; CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; ENABLE_APP_SANDBOX = NO; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = MusicScreen; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment"; INFOPLIST_KEY_NSAppleEventsUsageDescription = "MusicScreen reads the current track from Apple Music to display it on screen."; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.example.MusicScreen; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 6.0; }; name = Release; };
+		110000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; DEFINES_MODULE = YES; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = MusicScreen; INFOPLIST_KEY_NSPrincipalClass = MusicScreenSaverView; INSTALL_PATH = "$(HOME)/Library/Screen Savers"; MACH_O_TYPE = mh_bundle; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.example.MusicScreenSaver; PRODUCT_MODULE_NAME = MusicScreenSaver; PRODUCT_NAME = MusicScreenSaver; SKIP_INSTALL = NO; SWIFT_VERSION = 6.0; WRAPPER_EXTENSION = saver; }; name = Debug; };
+		110000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; COMBINE_HIDPI_IMAGES = YES; CURRENT_PROJECT_VERSION = 1; DEFINES_MODULE = YES; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = MusicScreen; INFOPLIST_KEY_NSPrincipalClass = MusicScreenSaverView; INSTALL_PATH = "$(HOME)/Library/Screen Savers"; MACH_O_TYPE = mh_bundle; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.example.MusicScreenSaver; PRODUCT_MODULE_NAME = MusicScreenSaver; PRODUCT_NAME = MusicScreenSaver; SKIP_INSTALL = NO; SWIFT_VERSION = 6.0; WRAPPER_EXTENSION = saver; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F00000000000000000000001 /* Build configuration list for PBXProject */ = {isa = XCConfigurationList; buildConfigurations = (110000000000000000000001, 110000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		F00000000000000000000002 /* Build configuration list for PBXNativeTarget */ = {isa = XCConfigurationList; buildConfigurations = (110000000000000000000003, 110000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		F00000000000000000000003 /* Build configuration list for MusicScreenSaver */ = {isa = XCConfigurationList; buildConfigurations = (110000000000000000000005, 110000000000000000000006); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = E00000000000000000000002 /* Project object */;
+}

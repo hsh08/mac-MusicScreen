@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#11162f"/>
+      <stop offset="0.5" stop-color="#573d78"/>
+      <stop offset="1" stop-color="#df745c"/>
+    </linearGradient>
+    <radialGradient id="sun">
+      <stop offset="0" stop-color="#ffe6a3"/>
+      <stop offset="1" stop-color="#ff8b70"/>
+    </radialGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1830"/>
+      <stop offset="1" stop-color="#05050b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <circle cx="512" cy="420" r="210" fill="url(#sun)" opacity=".92"/>
+  <path d="M0 590 L165 455 285 552 420 388 590 580 765 415 1024 625V1024H0Z" fill="#15152a" opacity=".92"/>
+  <path d="M0 690 L235 570 390 676 610 535 790 655 1024 550V1024H0Z" fill="#0d1020"/>
+  <path d="M370 1024 L475 670H549L664 1024Z" fill="url(#road)"/>
+  <path d="M502 1024 L510 720H526L538 1024Z" fill="#f4c36a" opacity=".78"/>
+  <g fill="none" stroke="#f8b077" stroke-width="5" opacity=".42">
+    <path d="M0 700H1024"/><path d="M0 735H1024"/><path d="M0 775H1024"/>
+  </g>
+</svg>

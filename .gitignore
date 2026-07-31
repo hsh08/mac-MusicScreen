@@ -1,0 +1,50 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Xcode user-specific state
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+*.xccheckout
+*.xcscmblueprint
+
+# Xcode and Swift build products
+DerivedData/
+build/
+Build/
+.build/
+.swiftpm/
+*.app
+*.saver
+*.dSYM
+*.dSYM.zip
+*.xcarchive
+*.ipa
+
+# Temporary files and logs
+*.log
+*.tmp
+*.temp
+.tmp/
+tmp/
+
+# MusicScreen runtime cache
+NowPlayingCache/
+RuntimeCache/
+now-playing.json
+Library/Application Support/
+
+# Credentials and local secrets
+.env
+.env.*
+!.env.example
+Secrets/
+secrets.*
+*.p12
+*.cer
+*.provisionprofile
+*.mobileprovision
+*.pem
+*.key
+*token.json
