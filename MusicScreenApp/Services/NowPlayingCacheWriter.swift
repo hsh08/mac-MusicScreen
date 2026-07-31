@@ -13,16 +13,34 @@ struct CacheWriteReceipt: Sendable {
 }
 
 actor NowPlayingCacheWriter {
+    static let duplicateHeartbeatInterval: TimeInterval = 5
+
     private let logger = Logger(subsystem: "com.example.MusicScreen", category: "CacheWriter")
     private var revision: UInt64?
     private var lastArtworkTrackID: String?
     private var lastArtworkRelativePath: String?
+    private var lastFingerprint: CacheFingerprint?
+    private var lastReceipt: CacheWriteReceipt?
+    private let customDirectoryURL: URL?
+
+    init(directoryURL: URL? = nil) {
+        customDirectoryURL = directoryURL
+    }
 
     func write(_ track: NowPlayingTrack, at writtenAt: Date = Date()) throws -> CacheWriteReceipt {
         let fileManager = FileManager.default
-        let artworkDirectory = NowPlayingCacheLocation.artworkDirectoryURL(fileManager: fileManager)
+        let directoryURL = customDirectoryURL
+            ?? NowPlayingCacheLocation.directoryURL(fileManager: fileManager)
+        let artworkDirectory = directoryURL.appendingPathComponent("Artwork", isDirectory: true)
         try fileManager.createDirectory(at: artworkDirectory, withIntermediateDirectories: true)
         try restoreStateIfNeeded(fileManager: fileManager)
+
+        let fingerprint = CacheFingerprint(track: track)
+        if fingerprint == lastFingerprint,
+           let lastReceipt,
+           writtenAt.timeIntervalSince(lastReceipt.writtenAt) < Self.duplicateHeartbeatInterval {
+            return lastReceipt
+        }
 
         var wroteArtwork = false
         var artworkRelativePath: String?
@@ -30,7 +48,7 @@ actor NowPlayingCacheWriter {
            let lastArtworkRelativePath,
            let existingURL = NowPlayingCacheLocation.artworkURL(
                 forRelativePath: lastArtworkRelativePath,
-                fileManager: fileManager
+                directoryURL: directoryURL
            ),
            fileManager.fileExists(atPath: existingURL.path) {
             artworkRelativePath = lastArtworkRelativePath
@@ -64,17 +82,20 @@ actor NowPlayingCacheWriter {
             artworkRelativePath: artworkRelativePath
         )
         let metadataData = try NowPlayingCacheLocation.encoder.encode(metadata)
-        let metadataURL = NowPlayingCacheLocation.metadataURL(fileManager: fileManager)
+        let metadataURL = directoryURL.appendingPathComponent(
+            NowPlayingCacheLocation.metadataFilename,
+            isDirectory: false
+        )
         try metadataData.write(to: metadataURL, options: [.atomic])
         revision = nextRevision
 
         let artworkURL = artworkRelativePath.flatMap {
-            NowPlayingCacheLocation.artworkURL(forRelativePath: $0, fileManager: fileManager)
+            NowPlayingCacheLocation.artworkURL(forRelativePath: $0, directoryURL: directoryURL)
         }
         logger.info(
             "Committed shared cache revision \(nextRevision, privacy: .public); artworkWritten=\(wroteArtwork, privacy: .public)"
         )
-        return CacheWriteReceipt(
+        let receipt = CacheWriteReceipt(
             metadataURL: metadataURL,
             artworkURL: artworkURL,
             revision: nextRevision,
@@ -82,11 +103,19 @@ actor NowPlayingCacheWriter {
             isReady: artworkRelativePath == nil || artworkURL != nil,
             writtenAt: writtenAt
         )
+        lastFingerprint = fingerprint
+        lastReceipt = receipt
+        return receipt
     }
 
     private func restoreStateIfNeeded(fileManager: FileManager) throws {
         guard revision == nil else { return }
-        let metadataURL = NowPlayingCacheLocation.metadataURL(fileManager: fileManager)
+        let directoryURL = customDirectoryURL
+            ?? NowPlayingCacheLocation.directoryURL(fileManager: fileManager)
+        let metadataURL = directoryURL.appendingPathComponent(
+            NowPlayingCacheLocation.metadataFilename,
+            isDirectory: false
+        )
         guard fileManager.fileExists(atPath: metadataURL.path) else {
             revision = 0
             return
@@ -128,5 +157,27 @@ actor NowPlayingCacheWriter {
             return nil
         }
         return (jpeg, "jpg")
+    }
+}
+
+private struct CacheFingerprint: Equatable, Sendable {
+    let id: String
+    let title: String
+    let artist: String
+    let album: String?
+    let playbackState: NowPlayingTrack.PlaybackState
+    let source: MusicSource
+    let artworkDigest: String?
+
+    init(track: NowPlayingTrack) {
+        id = track.id
+        title = track.title
+        artist = track.artist
+        album = track.album
+        playbackState = track.playbackState
+        source = track.source
+        artworkDigest = track.artworkData.map {
+            SHA256.hash(data: $0).map { String(format: "%02x", $0) }.joined()
+        }
     }
 }

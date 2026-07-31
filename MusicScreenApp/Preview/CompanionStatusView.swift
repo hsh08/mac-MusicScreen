@@ -6,9 +6,9 @@ struct CompanionStatusView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 7) {
             statusRow(
-                "Apple Music",
-                value: status.isAppleMusicConnected ? "Connected" : "Not connected",
-                isGood: status.isAppleMusicConnected
+                status.providerLabel,
+                value: status.isProviderConnected ? "Connected" : "Not connected",
+                isGood: status.isProviderConnected
             )
             statusRow(
                 "Last track refresh",

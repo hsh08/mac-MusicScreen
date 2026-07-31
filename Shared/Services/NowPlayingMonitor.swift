@@ -15,6 +15,8 @@ final class NowPlayingMonitor: ObservableObject {
     private var monitoringTask: Task<Void, Never>?
     private var generation = 0
 
+    var isMonitoring: Bool { monitoringTask != nil }
+
     init(provider: any MusicProvider) {
         self.provider = provider
     }
@@ -28,8 +30,8 @@ final class NowPlayingMonitor: ObservableObject {
         monitoringTask = Task { [weak self, provider] in
             while !Task.isCancelled {
                 do {
-                    let available = await provider.isAvailable()
                     let fetchedTrack = try await provider.fetchNowPlaying()
+                    let available = await provider.isAvailable()
                     guard !Task.isCancelled, self?.generation == currentGeneration else { break }
 
                     if fetchedTrack != self?.track {

@@ -1,18 +1,20 @@
 # MusicScreen
 
-MusicScreen is a native macOS companion app and screen saver that render the current Apple Music track with the same shared SwiftUI `NowPlayingScreen`.
+MusicScreen is a native macOS companion app and screen saver that render the current Apple Music or Spotify track with the same shared SwiftUI `NowPlayingScreen`.
 
 ## Architecture
 
 ```text
-Apple Music
-    -> MusicScreen.app / AppleMusicProvider / NowPlayingMonitor
+Apple Music or Spotify
+    -> MusicScreen.app / ProviderCoordinator / NowPlayingMonitor
     -> atomic JSON metadata + separate artwork file
     -> MusicScreenSaver.saver / SharedCacheMonitor
     -> Shared/NowPlayingScreen
 ```
 
-Only `MusicScreen.app` performs Apple Events automation. `MusicScreenSaver.saver` contains no Apple Music provider, `NSAppleScript`, `osascript`, or automation entitlement; it polls the read-only cache approximately once per second.
+Only `MusicScreen.app` performs Apple Events automation and Spotify artwork downloads. `MusicScreenSaver.saver` contains no provider, `NSAppleScript`, `osascript`, OAuth, network code, or automation entitlement; it polls the read-only cache approximately once per second.
+
+Spotify integration uses the installed Spotify app's public AppleScript dictionary. It reads each metadata property separately and uses the public HTTPS `artwork url`; the deprecated binary `artwork` property is not used. No Spotify Web API client, OAuth flow, client ID, client secret, token, private media framework, or undocumented API is included.
 
 The cache is stored under the current user's home directory at:
 
@@ -60,7 +62,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   -configuration Debug -destination 'platform=macOS' build
 ```
 
-Run `MusicScreen.app`, approve its Apple Music automation request, and leave it running while live screen-saver data is required. Its bottom-right status panel reports Apple Music connection, last refresh, cache write status, and whether screen-saver data is ready.
+Run `MusicScreen.app`, approve its Apple Music and/or Spotify automation request, and leave it running while live screen-saver data is required. If access was denied, enable MusicScreen under **System Settings > Privacy & Security > Automation**. Its bottom-right status panel reports the active provider, last refresh, cache write status, and whether screen-saver data is ready.
+
+The persisted **Music source** setting supports Auto, Apple Music, Spotify, and Demo. Auto prefers a playing provider, then the provider whose track or playback state changed most recently, then a paused provider, and finally the last successful display value. Spotify metadata remains visible while paused. Spotify artwork is fetched off the main actor with HTTPS, HTTP status, MIME type, timeout, image decoding, and 10 MB size checks; downloads and decoded data are reused in memory and stale track responses are discarded.
 
 Build the screen saver:
 
@@ -74,4 +78,8 @@ Open the resulting `MusicScreenSaver.saver`, install it for the current user, th
 
 ## Provider boundary
 
-The cache writer accepts a provider-neutral `NowPlayingTrack`; it does not depend on `AppleMusicProvider`. A future Spotify provider can reuse the same writer and cache schema after the Apple Music path has been validated, without adding provider code to the saver.
+The cache writer accepts a provider-neutral `NowPlayingTrack`; it does not depend on `AppleMusicProvider` or `SpotifyProvider`. Both sources reuse the same JSON schema, artwork files, saver reader, and SwiftUI views. Provider-specific code is compiled only into the companion app.
+
+## Tests
+
+The `MusicScreenTests` target covers Spotify response parsing and missing values, artwork URL validation and stale response identity, Auto selection and Spotify-failure fallback, duplicate cache suppression, shared cache round trips/malformed retention, and monitor start/stop cancellation.

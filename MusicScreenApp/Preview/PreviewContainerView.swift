@@ -7,35 +7,49 @@ struct PreviewContainerView: View {
     @StateObject private var monitor: NowPlayingMonitor
     @StateObject private var companionStatus = CompanionStatusModel()
     @ObservedObject private var settings = SharedSettings.shared
+    private let coordinator: ProviderCoordinator
 
     init() {
-        let provider: any MusicProvider = AppleMusicProvider()
+        let coordinator = ProviderCoordinator(selection: SharedSettings.shared.musicSource)
+        self.coordinator = coordinator
 #if DEBUG
         Self.logger.debug(
-            "Selected source=\(SharedSettings.shared.musicSource.rawValue, privacy: .public), providerType=\(String(reflecting: type(of: provider)), privacy: .public), providerName=\(provider.providerName, privacy: .public)"
+            "Selected source=\(SharedSettings.shared.musicSource.rawValue, privacy: .public), providerType=\(String(reflecting: type(of: coordinator)), privacy: .public), providerName=\(coordinator.providerName, privacy: .public)"
         )
 #endif
-        _monitor = StateObject(wrappedValue: NowPlayingMonitor(provider: provider))
+        _monitor = StateObject(wrappedValue: NowPlayingMonitor(provider: coordinator))
     }
 
     var body: some View {
         NowPlayingScreen(track: monitor.track, settings: settings)
-            .task { monitor.start() }
+            .task {
+                await coordinator.setSelection(settings.musicSource)
+                monitor.start()
+            }
             .onDisappear { monitor.stop() }
+            .onChange(of: settings.musicSource) { _, source in
+                Task { await coordinator.setSelection(source) }
+            }
             .onChange(of: monitor.lastSuccessfulRefreshAt) { _, refreshAt in
                 guard let refreshAt else { return }
                 companionStatus.updateConnection(
                     isAvailable: monitor.isProviderAvailable,
-                    lastRefreshAt: refreshAt
+                    lastRefreshAt: refreshAt,
+                    selectedSource: settings.musicSource,
+                    activeSource: monitor.track?.source
                 )
-                Task {
+                if monitor.isProviderAvailable {
+                    Task {
                     await companionStatus.persist(monitor.track, refreshAt: refreshAt)
+                    }
                 }
             }
             .onChange(of: monitor.isProviderAvailable, initial: true) { _, isAvailable in
                 companionStatus.updateConnection(
                     isAvailable: isAvailable,
-                    lastRefreshAt: monitor.lastSuccessfulRefreshAt
+                    lastRefreshAt: monitor.lastSuccessfulRefreshAt,
+                    selectedSource: settings.musicSource,
+                    activeSource: monitor.track?.source
                 )
             }
             .onChange(of: monitor.track, initial: true) { _, track in

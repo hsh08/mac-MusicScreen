@@ -62,8 +62,15 @@ enum NowPlayingCacheLocation {
         forRelativePath relativePath: String,
         fileManager: FileManager = .default
     ) -> URL? {
+        artworkURL(
+            forRelativePath: relativePath,
+            directoryURL: directoryURL(fileManager: fileManager)
+        )
+    }
+
+    static func artworkURL(forRelativePath relativePath: String, directoryURL: URL) -> URL? {
         guard !relativePath.isEmpty, !relativePath.hasPrefix("/") else { return nil }
-        let directory = directoryURL(fileManager: fileManager).standardizedFileURL
+        let directory = directoryURL.standardizedFileURL
         let candidate = directory
             .appendingPathComponent(relativePath, isDirectory: false)
             .standardizedFileURL
@@ -108,9 +115,20 @@ actor NowPlayingCacheReader {
     private var didLogMissingMetadata = false
     private var lastReadWasMalformed = false
 
+    private let customDirectoryURL: URL?
+
+    init(directoryURL: URL? = nil) {
+        customDirectoryURL = directoryURL
+    }
+
     func poll(at now: Date = Date()) -> SharedCachePollResult {
         let fileManager = FileManager.default
-        let metadataURL = NowPlayingCacheLocation.metadataURL(fileManager: fileManager)
+        let directoryURL = customDirectoryURL
+            ?? NowPlayingCacheLocation.directoryURL(fileManager: fileManager)
+        let metadataURL = directoryURL.appendingPathComponent(
+            NowPlayingCacheLocation.metadataFilename,
+            isDirectory: false
+        )
         let modificationDate: Date?
         do {
             modificationDate = try metadataURL
@@ -137,7 +155,11 @@ actor NowPlayingCacheReader {
                     throw CocoaError(.coderInvalidValue)
                 }
 
-                let artworkData = loadArtworkIfNeeded(for: metadata, fileManager: fileManager)
+                let artworkData = loadArtworkIfNeeded(
+                    for: metadata,
+                    directoryURL: directoryURL,
+                    fileManager: fileManager
+                )
                 lastMetadata = metadata
                 lastTrack = NowPlayingTrack(
                     id: metadata.trackID,
@@ -196,6 +218,7 @@ actor NowPlayingCacheReader {
 
     private func loadArtworkIfNeeded(
         for metadata: CachedNowPlayingMetadata,
+        directoryURL: URL,
         fileManager: FileManager
     ) -> Data? {
         if metadata.trackID == lastMetadata?.trackID,
@@ -205,7 +228,7 @@ actor NowPlayingCacheReader {
         guard let relativePath = metadata.artworkRelativePath,
               let artworkURL = NowPlayingCacheLocation.artworkURL(
                 forRelativePath: relativePath,
-                fileManager: fileManager
+                directoryURL: directoryURL
               ),
               let data = try? Data(contentsOf: artworkURL, options: [.mappedIfSafe]),
               !data.isEmpty,
