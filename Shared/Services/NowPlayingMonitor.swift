@@ -13,7 +13,7 @@ final class NowPlayingMonitor: ObservableObject {
     private let provider: any MusicProvider
     private let logger = Logger(subsystem: "com.example.MusicScreen", category: "NowPlaying")
     private var monitoringTask: Task<Void, Never>?
-    private var generation = 0
+    private(set) var generation = 0
 
     var isMonitoring: Bool { monitoringTask != nil }
 

@@ -62,7 +62,9 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
   -configuration Debug -destination 'platform=macOS' build
 ```
 
-Run `MusicScreen.app`, approve its Apple Music and/or Spotify automation request, and leave it running while live screen-saver data is required. If access was denied, enable MusicScreen under **System Settings > Privacy & Security > Automation**. Its bottom-right status panel reports the active provider, last refresh, cache write status, and whether screen-saver data is ready.
+Run `MusicScreen.app`, approve its Apple Music and/or Spotify automation request, and leave it running while live screen-saver data is required. MusicScreen is an `LSUIElement` companion: it appears in the menu bar instead of the Dock and does not open a main window at launch. The menu panel shows the current track and cache status, opens the single Settings window or Screen Saver settings, and is the place to quit the app. Closing Settings does not stop monitoring. If automation access was denied, enable MusicScreen under **System Settings > Privacy & Security > Automation**.
+
+Settings includes the existing live preview, all display preferences, and an opt-in **Launch at Login** toggle backed by `SMAppService.mainApp`. Display and source preferences persist in `UserDefaults`; Launch at Login is never enabled automatically.
 
 The persisted **Music source** setting supports Auto, Apple Music, Spotify, and Demo. Auto prefers a playing provider, then the provider whose track or playback state changed most recently, then a paused provider, and finally the last successful display value. Spotify metadata remains visible while paused. Spotify artwork is fetched off the main actor with HTTPS, HTTP status, MIME type, timeout, image decoding, and 10 MB size checks; downloads and decoded data are reused in memory and stale track responses are discarded.
 
@@ -82,4 +84,4 @@ The cache writer accepts a provider-neutral `NowPlayingTrack`; it does not depen
 
 ## Tests
 
-The `MusicScreenTests` target covers Spotify response parsing and missing values, artwork URL validation and stale response identity, Auto selection and Spotify-failure fallback, duplicate cache suppression, shared cache round trips/malformed retention, and monitor start/stop cancellation.
+The `MusicScreenTests` target covers Spotify response parsing and missing values, artwork URL validation and stale response identity, Auto selection and Spotify-failure fallback, duplicate cache suppression, shared cache round trips/malformed retention, monitor start/stop cancellation, single companion-monitor ownership, settings restoration, provider status mapping, and Launch at Login state mapping.

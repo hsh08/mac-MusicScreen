@@ -10,6 +10,8 @@ struct SpotifySnapshot: Sendable {
     let trackID: String?
     let spotifyURL: String?
     let artworkURL: URL?
+    let playbackPosition: TimeInterval?
+    let duration: TimeInterval?
 
     var stableID: String {
         if let trackID, !trackID.isEmpty { return trackID }
@@ -26,7 +28,9 @@ enum SpotifySnapshotParser {
         album: String?,
         trackID: String?,
         spotifyURL: String?,
-        artworkURL: String?
+        artworkURL: String?,
+        playbackPosition: String? = nil,
+        durationMilliseconds: String? = nil
     ) throws -> SpotifySnapshot {
         let normalizedState = state.spotifyTrimmed
         guard let playbackState = NowPlayingTrack.PlaybackState(rawValue: normalizedState) else {
@@ -40,7 +44,9 @@ enum SpotifySnapshotParser {
                 album: nil,
                 trackID: nil,
                 spotifyURL: nil,
-                artworkURL: nil
+                artworkURL: nil,
+                playbackPosition: nil,
+                duration: nil
             )
         }
 
@@ -57,8 +63,19 @@ enum SpotifySnapshotParser {
             trackID: trackID?.spotifyTrimmed.spotifyNilIfEmpty,
             spotifyURL: spotifyURL?.spotifyTrimmed.spotifyNilIfEmpty,
             artworkURL: artworkURL
-                .flatMap { URL(string: $0.spotifyTrimmed) }
+                .flatMap { URL(string: $0.spotifyTrimmed) },
+            playbackPosition: playbackPosition.flatMap(Self.nonnegativeNumber),
+            duration: durationMilliseconds
+                .flatMap(Self.nonnegativeNumber)
+                .map { $0 / 1_000 }
         )
+    }
+
+    private static func nonnegativeNumber(_ rawValue: String) -> TimeInterval? {
+        guard let value = TimeInterval(rawValue.spotifyTrimmed), value.isFinite, value >= 0 else {
+            return nil
+        }
+        return value
     }
 }
 
@@ -95,6 +112,8 @@ actor SpotifyAutomationClient {
     private let trackIDScript: NSAppleScript?
     private let spotifyURLScript: NSAppleScript?
     private let artworkURLScript: NSAppleScript?
+    private let playbackPositionScript: NSAppleScript?
+    private let durationScript: NSAppleScript?
     private let logger = Logger(subsystem: "com.example.MusicScreen", category: "SpotifyAutomation")
 
     init() {
@@ -105,6 +124,8 @@ actor SpotifyAutomationClient {
         trackIDScript = NSAppleScript(source: "tell application \"Spotify\" to return id of current track")
         spotifyURLScript = NSAppleScript(source: "tell application \"Spotify\" to return spotify url of current track")
         artworkURLScript = NSAppleScript(source: "tell application \"Spotify\" to return artwork url of current track")
+        playbackPositionScript = NSAppleScript(source: "tell application \"Spotify\" to return player position")
+        durationScript = NSAppleScript(source: "tell application \"Spotify\" to return duration of current track")
     }
 
     nonisolated func isRunning() -> Bool {
@@ -119,7 +140,9 @@ actor SpotifyAutomationClient {
               let albumScript,
               let trackIDScript,
               let spotifyURLScript,
-              let artworkURLScript
+              let artworkURLScript,
+              let playbackPositionScript,
+              let durationScript
         else {
             throw SpotifyAutomationError.scriptCreationFailed
         }
@@ -131,7 +154,9 @@ actor SpotifyAutomationClient {
             album: optionalString(from: albumScript, label: "album"),
             trackID: optionalString(from: trackIDScript, label: "trackID"),
             spotifyURL: optionalString(from: spotifyURLScript, label: "spotifyURL"),
-            artworkURL: optionalString(from: artworkURLScript, label: "artworkURL")
+            artworkURL: optionalString(from: artworkURLScript, label: "artworkURL"),
+            playbackPosition: optionalString(from: playbackPositionScript, label: "playerPosition"),
+            durationMilliseconds: optionalString(from: durationScript, label: "duration")
         )
 
 #if DEBUG

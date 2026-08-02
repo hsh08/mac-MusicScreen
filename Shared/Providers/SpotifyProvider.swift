@@ -51,7 +51,10 @@ actor SpotifyProvider: MusicProvider {
             artworkURL: snapshot.artworkURL,
             playbackState: snapshot.playbackState,
             source: .spotify,
-            updatedAt: Date()
+            updatedAt: Date(),
+            playbackPosition: snapshot.playbackPosition,
+            duration: snapshot.duration,
+            externalURL: snapshot.spotifyURL.flatMap(URL.init(string:))
         )
         if let lastTrack, lastTrack.hasSameDisplayContent(as: candidate) {
             return lastTrack
@@ -123,7 +126,10 @@ actor SpotifyProvider: MusicProvider {
                 artworkURL: lastTrack.artworkURL,
                 playbackState: .stopped,
                 source: .spotify,
-                updatedAt: Date()
+                updatedAt: Date(),
+                playbackPosition: lastTrack.playbackPosition,
+                duration: lastTrack.duration,
+                externalURL: lastTrack.externalURL
             )
             self.lastTrack = stoppedTrack
             return stoppedTrack
@@ -252,5 +258,8 @@ private extension NowPlayingTrack {
             && artworkURL == other.artworkURL
             && playbackState == other.playbackState
             && source == other.source
+            && playbackPosition == other.playbackPosition
+            && duration == other.duration
+            && externalURL == other.externalURL
     }
 }

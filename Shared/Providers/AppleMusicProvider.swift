@@ -43,15 +43,6 @@ actor AppleMusicProvider: MusicProvider {
         }
 
         stoppedAt = nil
-        if let lastTrack,
-           lastTrack.id == snapshot.stableID,
-           lastTrack.title == snapshot.title,
-           lastTrack.artist == snapshot.artist,
-           lastTrack.album == snapshot.album,
-           lastTrack.playbackState == snapshot.playbackState {
-            return lastTrack
-        }
-
         let artworkData = await artwork(for: snapshot)
         let track = NowPlayingTrack(
             id: snapshot.stableID,
@@ -62,7 +53,9 @@ actor AppleMusicProvider: MusicProvider {
             artworkURL: nil,
             playbackState: snapshot.playbackState,
             source: .appleMusic,
-            updatedAt: Date()
+            updatedAt: Date(),
+            playbackPosition: snapshot.playbackPosition,
+            duration: snapshot.duration
         )
 
         if lastTrack?.id != track.id {
@@ -93,7 +86,10 @@ actor AppleMusicProvider: MusicProvider {
                 artworkURL: lastTrack.artworkURL,
                 playbackState: .stopped,
                 source: lastTrack.source,
-                updatedAt: Date()
+                updatedAt: Date(),
+                playbackPosition: lastTrack.playbackPosition,
+                duration: lastTrack.duration,
+                externalURL: lastTrack.externalURL
             )
             self.lastTrack = stoppedTrack
             logger.info("Playback stopped; retaining the last track temporarily")

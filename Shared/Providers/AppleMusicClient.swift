@@ -9,6 +9,8 @@ struct AppleMusicSnapshot: Sendable {
     let album: String?
     let persistentID: String?
     let databaseID: Int32?
+    let playbackPosition: TimeInterval?
+    let duration: TimeInterval?
 
     var stableID: String {
         if let persistentID, !persistentID.isEmpty {
@@ -47,6 +49,8 @@ actor AppleMusicClient {
     private let albumScript: NSAppleScript?
     private let persistentIDScript: NSAppleScript?
     private let databaseIDScript: NSAppleScript?
+    private let playbackPositionScript: NSAppleScript?
+    private let durationScript: NSAppleScript?
     private let artworkScript: NSAppleScript?
     private let logger = Logger(subsystem: "com.example.MusicScreen", category: "AppleMusicClient")
 
@@ -61,6 +65,8 @@ actor AppleMusicClient {
         albumScript = NSAppleScript(source: "tell application \"Music\" to return album of current track")
         persistentIDScript = NSAppleScript(source: "tell application \"Music\" to return persistent ID of current track")
         databaseIDScript = NSAppleScript(source: "tell application \"Music\" to return database ID of current track")
+        playbackPositionScript = NSAppleScript(source: "tell application \"Music\" to return player position")
+        durationScript = NSAppleScript(source: "tell application \"Music\" to return duration of current track")
         artworkScript = NSAppleScript(source: Self.artworkScriptSource)
     }
 
@@ -77,7 +83,9 @@ actor AppleMusicClient {
               let artistScript,
               let albumScript,
               let persistentIDScript,
-              let databaseIDScript
+              let databaseIDScript,
+              let playbackPositionScript,
+              let durationScript
         else {
             throw AppleMusicClientError.scriptCreationFailed
         }
@@ -95,7 +103,9 @@ actor AppleMusicClient {
                 artist: "",
                 album: nil,
                 persistentID: nil,
-                databaseID: nil
+                databaseID: nil,
+                playbackPosition: nil,
+                duration: nil
             )
         }
 
@@ -106,6 +116,8 @@ actor AppleMusicClient {
         // It must never suppress a valid title/artist/album result.
         let rawPersistentID = try? execute(persistentIDScript, label: "persistentID").stringValue?.trimmed
         let databaseValue = (try? execute(databaseIDScript, label: "databaseID").int32Value) ?? 0
+        let playbackPosition = try? numericValue(from: playbackPositionScript, label: "playerPosition")
+        let duration = try? numericValue(from: durationScript, label: "duration")
 
 #if DEBUG
         logger.debug(
@@ -125,7 +137,9 @@ actor AppleMusicClient {
             artist: artist,
             album: rawAlbum?.nilIfEmpty,
             persistentID: rawPersistentID?.nilIfEmpty,
-            databaseID: databaseValue == 0 ? nil : databaseValue
+            databaseID: databaseValue == 0 ? nil : databaseValue,
+            playbackPosition: playbackPosition,
+            duration: duration
         )
     }
 
@@ -187,6 +201,16 @@ actor AppleMusicClient {
             throw AppleMusicClientError.scriptFailed(code: code, message: message)
         }
         return response
+    }
+
+    private func numericValue(from script: NSAppleScript, label: String) throws -> TimeInterval? {
+        let response = try execute(script, label: label)
+        guard let rawValue = response.stringValue,
+              let value = TimeInterval(rawValue),
+              value.isFinite,
+              value >= 0
+        else { return nil }
+        return value
     }
 
     private static let artworkScriptSource = """

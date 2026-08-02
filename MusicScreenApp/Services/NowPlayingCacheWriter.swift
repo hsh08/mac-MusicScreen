@@ -27,6 +27,8 @@ actor NowPlayingCacheWriter {
         customDirectoryURL = directoryURL
     }
 
+    var currentRevision: UInt64? { revision }
+
     func write(_ track: NowPlayingTrack, at writtenAt: Date = Date()) throws -> CacheWriteReceipt {
         let fileManager = FileManager.default
         let directoryURL = customDirectoryURL

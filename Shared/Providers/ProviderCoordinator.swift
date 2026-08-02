@@ -38,7 +38,9 @@ actor ProviderCoordinator: MusicProvider {
     func isAvailable() async -> Bool {
         switch selection {
         case .automatic:
-            return !candidates.isEmpty
+            let isAppleMusicAvailable = await appleMusic.isAvailable()
+            let isSpotifyAvailable = await spotify.isAvailable()
+            return isAppleMusicAvailable || isSpotifyAvailable
         case .appleMusic:
             return await appleMusic.isAvailable()
         case .spotify:
@@ -86,6 +88,9 @@ actor ProviderCoordinator: MusicProvider {
             ?? current.max { $0.changedAt < $1.changedAt }
 
         if let selected {
+            if lastSelectedTrack?.source != selected.track.source {
+                logger.info("Provider switched to \(selected.track.source.rawValue, privacy: .public)")
+            }
             lastSelectedTrack = selected.track
             return selected.track
         }
