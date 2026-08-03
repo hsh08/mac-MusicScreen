@@ -14,6 +14,25 @@ struct MenuBarCompanionView: View {
     }
 
     var body: some View {
+        Group {
+            if model.showsLaunchAtLoginOnboarding {
+                launchAtLoginOnboarding
+                    .transition(.opacity.combined(with: .scale(scale: 0.98)))
+            } else {
+                normalContent
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: model.showsLaunchAtLoginOnboarding)
+        .padding(16)
+        .frame(width: 340)
+        .onAppear {
+            model.noteMenuBarCreated()
+            launchAtLogin.refresh()
+        }
+    }
+
+    private var normalContent: some View {
         VStack(alignment: .leading, spacing: 12) {
             currentTrack
 
@@ -40,9 +59,6 @@ struct MenuBarCompanionView: View {
             diagnostics
 #endif
         }
-        .padding(16)
-        .frame(width: 340)
-        .onAppear { model.noteMenuBarCreated() }
     }
 
     private var currentTrack: some View {
@@ -98,8 +114,69 @@ struct MenuBarCompanionView: View {
                     }
                 }
             }
+
+            playbackControls
         }
         .animation(.easeInOut(duration: 0.3), value: model.track?.id)
+    }
+
+    private var playbackControls: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 18) {
+                playbackButton(
+                    command: .previousTrack,
+                    symbol: "backward.fill",
+                    accessibilityLabel: "Previous Track"
+                )
+                playbackButton(
+                    command: .togglePlayPause,
+                    symbol: model.playPauseSymbol,
+                    accessibilityLabel: model.playbackStateForControls == .playing ? "Pause" : "Play"
+                )
+                playbackButton(
+                    command: .nextTrack,
+                    symbol: "forward.fill",
+                    accessibilityLabel: "Next Track"
+                )
+            }
+            .frame(maxWidth: .infinity)
+
+            if let message = model.playbackCommandMessage {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+        }
+    }
+
+    private func playbackButton(
+        command: PlaybackCommand,
+        symbol: String,
+        accessibilityLabel: String
+    ) -> some View {
+        Button {
+            model.performPlaybackCommand(command)
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(.quaternary)
+                if model.playbackCommandInFlight == command {
+                    ProgressView()
+                        .controlSize(.mini)
+                } else {
+                    Image(systemName: symbol)
+                        .font(.system(size: 13, weight: .semibold))
+                }
+            }
+            .frame(width: 34, height: 34)
+            .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!model.isPlaybackControlEnabled)
+        .focusable(true)
+        .accessibilityLabel(accessibilityLabel)
+        .help(accessibilityLabel)
     }
 
     private var sourceSection: some View {
@@ -151,6 +228,43 @@ struct MenuBarCompanionView: View {
         }
         .padding(10)
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 9))
+    }
+
+    private var launchAtLoginOnboarding: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("MusicScreen works best when it starts automatically.")
+                .font(.headline)
+
+            Toggle("Launch at Login", isOn: .constant(true))
+                .toggleStyle(.checkbox)
+                .disabled(true)
+
+            Text("MusicScreen runs quietly in the menu bar and keeps your screen saver updated with the currently playing album artwork.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let message = model.launchAtLoginOnboardingMessage {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack {
+                Button("Enable") {
+                    model.enableLaunchAtLoginFromOnboarding()
+                }
+                .keyboardShortcut(.defaultAction)
+
+                Button("Not Now") {
+                    model.dismissLaunchAtLoginOnboarding()
+                }
+                .keyboardShortcut(.cancelAction)
+            }
+            .controlSize(.small)
+        }
+        .padding(12)
+        .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
     }
 
     private var actions: some View {

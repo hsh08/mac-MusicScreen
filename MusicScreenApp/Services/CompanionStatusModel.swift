@@ -58,7 +58,8 @@ final class LaunchAtLoginModel: ObservableObject {
         state = .map(service.status)
     }
 
-    func setEnabled(_ enabled: Bool) {
+    @discardableResult
+    func setEnabled(_ enabled: Bool) -> Bool {
         do {
             if enabled {
                 try service.register()
@@ -68,10 +69,12 @@ final class LaunchAtLoginModel: ObservableObject {
             errorMessage = nil
             refresh()
             logger.info("Launch at login registration result: \(String(describing: self.state), privacy: .public)")
+            return true
         } catch {
             refresh()
             errorMessage = error.localizedDescription
             logger.error("Launch at login registration failed: \(error.localizedDescription, privacy: .public)")
+            return false
         }
     }
 }
@@ -87,6 +90,11 @@ final class CompanionStatusModel: ObservableObject {
     @Published private(set) var isScreenSaverDataReady = false
     @Published private(set) var cacheErrorMessage: String?
     @Published private(set) var screenSaverSettingsMessage: String?
+    @Published private(set) var playbackCommandInFlight: PlaybackCommand?
+    @Published private(set) var playbackCommandMessage: String?
+    @Published private(set) var optimisticPlaybackState: NowPlayingTrack.PlaybackState?
+    @Published private(set) var showsLaunchAtLoginOnboarding: Bool
+    @Published private(set) var launchAtLoginOnboardingMessage: String?
     @Published var showsSetupGuide: Bool
 
     let settings: SharedSettings
@@ -95,19 +103,27 @@ final class CompanionStatusModel: ObservableObject {
     private let coordinator: ProviderCoordinator
     private let monitor: NowPlayingMonitor
     private let writer: NowPlayingCacheWriter
+    private let playbackControllers: PlaybackControllerSet
     private let defaults: UserDefaults
     private let logger = Logger(subsystem: "com.example.MusicScreen", category: "Companion")
     private var cancellables = Set<AnyCancellable>()
     private var sourceChangeTask: Task<Void, Never>?
+    private var playbackCommandTask: Task<Void, Never>?
+    private var optimisticPlaybackResetTask: Task<Void, Never>?
+    private var playbackCommandGate = PlaybackCommandGate()
+    private var playbackCommandGeneration = 0
+    private var optimisticPlaybackContext: PlaybackCommandContext?
     private var didLogMenuBarCreation = false
     private var isStarted = false
 
     private static let setupGuideSeenKey = "hasSeenCompanionSetupGuide"
+    private static let launchAtLoginOnboardingCompletedKey = "hasCompletedLaunchAtLoginOnboarding"
 
     init(
         settings: SharedSettings = .shared,
         coordinator: ProviderCoordinator? = nil,
         writer: NowPlayingCacheWriter = NowPlayingCacheWriter(),
+        playbackControllers: PlaybackControllerSet = PlaybackControllerSet(),
         launchAtLogin: LaunchAtLoginModel = LaunchAtLoginModel(),
         defaults: UserDefaults = .standard,
         startsImmediately: Bool = true
@@ -115,10 +131,14 @@ final class CompanionStatusModel: ObservableObject {
         self.settings = settings
         self.coordinator = coordinator ?? ProviderCoordinator(selection: settings.musicSource)
         self.writer = writer
+        self.playbackControllers = playbackControllers
         self.launchAtLogin = launchAtLogin
         self.defaults = defaults
         monitor = NowPlayingMonitor(provider: self.coordinator)
         showsSetupGuide = !defaults.bool(forKey: Self.setupGuideSeenKey)
+        showsLaunchAtLoginOnboarding = !defaults.bool(
+            forKey: Self.launchAtLoginOnboardingCompletedKey
+        )
 
         bindMonitor()
         bindSettings()
@@ -140,6 +160,22 @@ final class CompanionStatusModel: ObservableObject {
     var selectedSourceLabel: String { settings.musicSource.rawValue }
     var currentTrackTitle: String { track?.title ?? "No music playing" }
     var currentArtistLabel: String { track?.artist ?? "Start playback in Apple Music or Spotify" }
+    var playbackStateForControls: NowPlayingTrack.PlaybackState? {
+        guard let optimisticPlaybackState,
+              optimisticPlaybackContext?.matches(
+                selection: settings.musicSource,
+                track: track
+              ) == true
+        else { return track?.playbackState }
+        return optimisticPlaybackState
+    }
+    var playPauseSymbol: String {
+        PlaybackControlPresentation.playPauseSymbol(for: playbackStateForControls)
+    }
+    var isPlaybackControlEnabled: Bool {
+        playbackCommandInFlight == nil
+            && PlaybackCommandContext.make(selection: settings.musicSource, track: track) != nil
+    }
     var cacheStatusLabel: String {
         Self.cacheStatusLabel(
             writeSucceeded: cacheWriteSucceeded,
@@ -171,6 +207,7 @@ final class CompanionStatusModel: ObservableObject {
         isStarted = false
         sourceChangeTask?.cancel()
         sourceChangeTask = nil
+        cancelPlaybackCommand()
         monitor.stop()
     }
 
@@ -183,6 +220,69 @@ final class CompanionStatusModel: ObservableObject {
     func dismissSetupGuide() {
         defaults.set(true, forKey: Self.setupGuideSeenKey)
         showsSetupGuide = false
+    }
+
+    func enableLaunchAtLoginFromOnboarding() {
+        guard launchAtLogin.setEnabled(true) else {
+            launchAtLoginOnboardingMessage = "Unable to enable Launch at Login."
+            return
+        }
+        completeLaunchAtLoginOnboarding()
+    }
+
+    func dismissLaunchAtLoginOnboarding() {
+        completeLaunchAtLoginOnboarding()
+    }
+
+    func performPlaybackCommand(_ command: PlaybackCommand) {
+        let selection = settings.musicSource
+        guard let context = PlaybackCommandContext.make(selection: selection, track: track),
+              let controller = playbackControllers.controller(for: context.source),
+              playbackCommandGate.begin(command)
+        else { return }
+
+        playbackCommandGeneration += 1
+        let generation = playbackCommandGeneration
+        playbackCommandInFlight = command
+        playbackCommandMessage = nil
+
+        playbackCommandTask = Task { [weak self, controller] in
+            guard let self else { return }
+            await Task.yield()
+            guard !Task.isCancelled,
+                  generation == playbackCommandGeneration,
+                  context.matches(selection: settings.musicSource, track: track)
+            else {
+                finishPlaybackCommand(generation: generation)
+                return
+            }
+
+            do {
+                try await controller.perform(command)
+                guard !Task.isCancelled,
+                      generation == playbackCommandGeneration,
+                      context.matches(selection: settings.musicSource, track: track)
+                else {
+                    finishPlaybackCommand(generation: generation)
+                    return
+                }
+                if command == .togglePlayPause {
+                    optimisticPlaybackContext = context
+                    optimisticPlaybackState = playbackStateForControls == .playing ? .paused : .playing
+                    scheduleOptimisticPlaybackReset(for: context)
+                }
+                playbackCommandMessage = nil
+            } catch is CancellationError {
+                // Source changes and app shutdown cancel stale commands silently.
+            } catch let error as PlaybackControlError {
+                playbackCommandMessage = error.userMessage
+                logger.error("Playback command failed: \(String(describing: error), privacy: .public)")
+            } catch {
+                playbackCommandMessage = "Playback Command Failed"
+                logger.error("Playback command failed: \(error.localizedDescription, privacy: .public)")
+            }
+            finishPlaybackCommand(generation: generation)
+        }
     }
 
     func openScreenSaverSettings() {
@@ -240,6 +340,9 @@ final class CompanionStatusModel: ObservableObject {
     private func bindMonitor() {
         monitor.$track
             .sink { [weak self] track in
+                if self?.track != track {
+                    self?.clearOptimisticPlaybackState()
+                }
                 self?.track = track
                 self?.refreshConnectionState()
             }
@@ -274,6 +377,8 @@ final class CompanionStatusModel: ObservableObject {
             .dropFirst()
             .sink { [weak self] source in
                 guard let self else { return }
+                cancelPlaybackCommand()
+                playbackCommandMessage = nil
                 sourceChangeTask?.cancel()
                 monitor.stop()
                 sourceChangeTask = Task { [weak self, coordinator] in
@@ -301,6 +406,46 @@ final class CompanionStatusModel: ObservableObject {
         } else {
             connectionState = .connected
         }
+    }
+
+    private func completeLaunchAtLoginOnboarding() {
+        defaults.set(true, forKey: Self.launchAtLoginOnboardingCompletedKey)
+        launchAtLoginOnboardingMessage = nil
+        showsLaunchAtLoginOnboarding = false
+    }
+
+    private func finishPlaybackCommand(generation: Int) {
+        guard generation == playbackCommandGeneration else { return }
+        playbackCommandGate.finish()
+        playbackCommandInFlight = nil
+        playbackCommandTask = nil
+    }
+
+    private func cancelPlaybackCommand() {
+        playbackCommandGeneration += 1
+        playbackCommandTask?.cancel()
+        playbackCommandTask = nil
+        playbackCommandGate.finish()
+        playbackCommandInFlight = nil
+        clearOptimisticPlaybackState()
+    }
+
+    private func scheduleOptimisticPlaybackReset(for context: PlaybackCommandContext) {
+        optimisticPlaybackResetTask?.cancel()
+        optimisticPlaybackResetTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled,
+                  self?.optimisticPlaybackContext == context
+            else { return }
+            self?.clearOptimisticPlaybackState()
+        }
+    }
+
+    private func clearOptimisticPlaybackState() {
+        optimisticPlaybackResetTask?.cancel()
+        optimisticPlaybackResetTask = nil
+        optimisticPlaybackContext = nil
+        optimisticPlaybackState = nil
     }
 
     static func connectionState(errorMessage: String?) -> CompanionConnectionState {
@@ -336,6 +481,8 @@ final class CompanionStatusModel: ObservableObject {
 
     deinit {
         sourceChangeTask?.cancel()
+        playbackCommandTask?.cancel()
+        optimisticPlaybackResetTask?.cancel()
     }
 }
 

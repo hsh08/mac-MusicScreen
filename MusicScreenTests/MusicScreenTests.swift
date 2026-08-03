@@ -307,6 +307,127 @@ struct MusicScreenTests {
         #expect(production != development)
     }
 
+    @Test func playbackControllerSetSelectsControllerBySource() async throws {
+        let apple = RecordingPlaybackController()
+        let spotify = RecordingPlaybackController()
+        let controllers = PlaybackControllerSet(appleMusic: apple, spotify: spotify)
+
+        let selectedAppleController = try #require(controllers.controller(for: .appleMusic))
+        let selectedSpotifyController = try #require(controllers.controller(for: .spotify))
+        try await selectedAppleController.nextTrack()
+        try await selectedSpotifyController.previousTrack()
+
+        let appleCommands = await apple.commands
+        let spotifyCommands = await spotify.commands
+        let demoController = controllers.controller(for: .demo)
+        #expect(appleCommands == [.nextTrack])
+        #expect(spotifyCommands == [.previousTrack])
+        #expect(demoController == nil)
+    }
+
+    @Test func automaticPlaybackRoutingUsesCoordinatorActiveTrack() {
+        #expect(PlaybackRouting.activeSource(
+            selection: .automatic,
+            track: Self.track(source: .appleMusic, state: .playing)
+        ) == .appleMusic)
+        #expect(PlaybackRouting.activeSource(
+            selection: .automatic,
+            track: Self.track(source: .spotify, state: .playing)
+        ) == .spotify)
+    }
+
+    @Test func playbackRoutingRequiresActiveNonDemoTrack() {
+        #expect(PlaybackRouting.activeSource(selection: .automatic, track: nil) == nil)
+        #expect(PlaybackRouting.activeSource(
+            selection: .automatic,
+            track: Self.track(source: .spotify, state: .paused)
+        ) == nil)
+        #expect(PlaybackRouting.activeSource(
+            selection: .appleMusic,
+            track: Self.track(source: .appleMusic, state: .stopped)
+        ) == nil)
+        #expect(PlaybackRouting.activeSource(
+            selection: .demo,
+            track: Self.track(source: .demo, state: .playing)
+        ) == nil)
+    }
+
+    @Test func explicitPlaybackRoutingRejectsTrackFromStaleProvider() {
+        let appleTrack = Self.track(source: .appleMusic, state: .playing)
+        #expect(PlaybackRouting.activeSource(selection: .appleMusic, track: appleTrack) == .appleMusic)
+        #expect(PlaybackRouting.activeSource(selection: .spotify, track: appleTrack) == nil)
+    }
+
+    @Test func playbackCommandGateRejectsCommandsWhileInFlight() {
+        var gate = PlaybackCommandGate()
+        let acceptedFirst = gate.begin(.nextTrack)
+        let acceptedWhileBusy = gate.begin(.previousTrack)
+        #expect(acceptedFirst)
+        #expect(!acceptedWhileBusy)
+        #expect(gate.commandInFlight == .nextTrack)
+        gate.finish()
+        let acceptedAfterFinish = gate.begin(.previousTrack)
+        #expect(acceptedAfterFinish)
+    }
+
+    @Test func playPauseSymbolReflectsPlaybackState() {
+        #expect(PlaybackControlPresentation.playPauseSymbol(for: .playing) == "pause.fill")
+        #expect(PlaybackControlPresentation.playPauseSymbol(for: .paused) == "play.fill")
+        #expect(PlaybackControlPresentation.playPauseSymbol(for: nil) == "play.fill")
+    }
+
+    @Test func playbackControllerErrorMapping() {
+        #expect(PlaybackControlError.mapAppleScriptError(
+            source: .appleMusic,
+            code: -1743,
+            message: "Not authorized"
+        ) == .automationPermissionRequired(.appleMusic))
+        #expect(PlaybackControlError.mapAppleScriptError(
+            source: .spotify,
+            code: -10000,
+            message: "Command unsupported"
+        ) == .commandFailed(
+            source: .spotify,
+            code: -10000,
+            message: "Command unsupported"
+        ))
+        #expect(PlaybackControlError.appNotRunning(.spotify).userMessage == "Open Spotify")
+    }
+
+    @Test func playbackCommandContextRejectsProviderTransition() {
+        let appleTrack = Self.track(source: .appleMusic, state: .playing)
+        let context = PlaybackCommandContext.make(selection: .automatic, track: appleTrack)
+        #expect(context?.matches(selection: .automatic, track: appleTrack) == true)
+        #expect(context?.matches(
+            selection: .automatic,
+            track: Self.track(source: .spotify, state: .playing)
+        ) == false)
+        #expect(context?.matches(selection: .spotify, track: appleTrack) == false)
+    }
+
+    @MainActor
+    @Test func launchAtLoginOnboardingAppearsOnlyOnce() {
+        let suiteName = "MusicScreenTests.Onboarding.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suiteName)!
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let first = CompanionStatusModel(
+            settings: SharedSettings(defaults: defaults),
+            defaults: defaults,
+            startsImmediately: false
+        )
+        #expect(first.showsLaunchAtLoginOnboarding)
+        first.dismissLaunchAtLoginOnboarding()
+        #expect(!first.showsLaunchAtLoginOnboarding)
+
+        let restored = CompanionStatusModel(
+            settings: SharedSettings(defaults: defaults),
+            defaults: defaults,
+            startsImmediately: false
+        )
+        #expect(!restored.showsLaunchAtLoginOnboarding)
+    }
+
     private static func track(
         source: MusicSource,
         state: NowPlayingTrack.PlaybackState,
@@ -328,6 +449,22 @@ struct MusicScreenTests {
     private static let onePixelPNG = Data(base64Encoded:
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII="
     )!
+}
+
+private actor RecordingPlaybackController: PlaybackController {
+    private(set) var commands: [PlaybackCommand] = []
+
+    func previousTrack() {
+        commands.append(.previousTrack)
+    }
+
+    func togglePlayPause() {
+        commands.append(.togglePlayPause)
+    }
+
+    func nextTrack() {
+        commands.append(.nextTrack)
+    }
 }
 
 private enum StubResult: Sendable {
