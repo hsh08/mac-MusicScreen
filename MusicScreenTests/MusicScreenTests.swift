@@ -261,6 +261,52 @@ struct MusicScreenTests {
         #expect(LaunchAtLoginState.map(.notFound) == .unavailable)
     }
 
+    @Test func onlyPrimaryNonTestInstanceStartsMonitoring() {
+        #expect(ApplicationLaunchPolicy.shouldStartMonitoring(
+            isPrimaryInstance: true,
+            isRunningTests: false
+        ))
+        #expect(!ApplicationLaunchPolicy.shouldStartMonitoring(
+            isPrimaryInstance: false,
+            isRunningTests: false
+        ))
+        #expect(!ApplicationLaunchPolicy.shouldStartMonitoring(
+            isPrimaryInstance: true,
+            isRunningTests: true
+        ))
+    }
+
+    @Test func instanceLockNameUsesNormalizedBundleIdentifier() {
+        #expect(ApplicationInstanceLockName.filename(
+            bundleIdentifier: "com.example.MusicScreen"
+        ) == "com.example.MusicScreen.instance.lock")
+        #expect(ApplicationInstanceLockName.filename(
+            bundleIdentifier: "com/example:MusicScreen"
+        ) == "com-example-MusicScreen.instance.lock")
+    }
+
+    @Test func instanceLockNameUsesSafeFallbackWithoutBundleIdentifier() {
+        #expect(ApplicationInstanceLockName.filename(
+            bundleIdentifier: nil
+        ) == "MusicScreen.instance.lock")
+        #expect(ApplicationInstanceLockName.filename(
+            bundleIdentifier: " / "
+        ) == "MusicScreen.instance.lock")
+    }
+
+    @Test func differentBundleIdentifiersUseDifferentLockPaths() {
+        let directory = URL(fileURLWithPath: "/tmp", isDirectory: true)
+        let production = ApplicationInstanceLockName.url(
+            bundleIdentifier: "com.example.MusicScreen",
+            in: directory
+        )
+        let development = ApplicationInstanceLockName.url(
+            bundleIdentifier: "com.example.MusicScreen.debug",
+            in: directory
+        )
+        #expect(production != development)
+    }
+
     private static func track(
         source: MusicSource,
         state: NowPlayingTrack.PlaybackState,
